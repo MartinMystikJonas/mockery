@@ -48,6 +48,13 @@ class Configuration
     protected $_internalClassParamMap = array();
 
     /**
+     * Custom object formatters
+     *
+     * @var array
+     */
+    protected $_objectFormatters = array();
+
+    /**
      * Set boolean to allow/prevent mocking of non-existent methods
      *
      * @param bool
@@ -126,5 +133,28 @@ class Configuration
     public function getInternalClassMethodParamMaps()
     {
         return $this->_internalClassParamMap;
+    }
+
+    public function setObjectFormatter($class, $formatterCallback)
+    {
+        $this->_objectFormatters[$class] = $formatterCallback;
+    }
+
+    public function findObjectFormatter($class)
+    {
+        $parentClass = $class;
+        for ($classes[] = $parentClass; $parentClass = get_parent_class($parentClass); $classes[] = $parentClass);
+        $classesAndInterfaces = array_merge($classes, class_implements($class));
+        foreach ($classesAndInterfaces as $type) {
+            if (isset($this->_objectFormatters[$type])) {
+                return $type;
+            }
+        }
+        return null;
+    }
+
+    public function getObjectFormatter($class)
+    {
+        return $this->_objectFormatters[$class];
     }
 }
