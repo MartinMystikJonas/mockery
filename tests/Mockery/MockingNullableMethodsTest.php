@@ -25,9 +25,6 @@ use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\Generator\Method;
 use test\Mockery\Fixtures\MethodWithNullableReturnType;
 
-/**
- * @requires PHP 7.1.0RC3
- */
 class MockingNullableMethodsTest extends MockeryTestCase
 {
     /**
@@ -35,11 +32,11 @@ class MockingNullableMethodsTest extends MockeryTestCase
      */
     private $container;
 
-    protected function setUp()
+    protected function mockeryTestSetUp()
     {
-        parent::setUp();
+        parent::mockeryTestSetUp();
 
-        require_once __DIR__."/Fixtures/MethodWithNullableReturnType.php";
+        require_once __DIR__ . "/Fixtures/MethodWithNullableReturnType.php";
     }
 
     /**
@@ -55,13 +52,13 @@ class MockingNullableMethodsTest extends MockeryTestCase
 
     /**
      * @test
-     * @expectedException \TypeError
      */
     public function itShouldNotAllowNonNullToBeNull()
     {
         $mock = mock("test\Mockery\Fixtures\MethodWithNullableReturnType");
 
         $mock->shouldReceive('nonNullablePrimitive')->andReturn(null);
+        $this->expectException(\TypeError::class);
         $mock->nonNullablePrimitive();
     }
 
@@ -79,7 +76,7 @@ class MockingNullableMethodsTest extends MockeryTestCase
     /**
      * @test
      */
-    public function itShouldAllowPrimitiveNullabeToBeSet()
+    public function itShouldAllowPrimitiveNullableToBeSet()
     {
         $mock = mock("test\Mockery\Fixtures\MethodWithNullableReturnType");
 
@@ -100,13 +97,13 @@ class MockingNullableMethodsTest extends MockeryTestCase
 
     /**
      * @test
-     * @expectedException \TypeError
      */
     public function itShouldNotAllowSelfToBeNull()
     {
         $mock = mock("test\Mockery\Fixtures\MethodWithNullableReturnType");
 
         $mock->shouldReceive('nonNullableSelf')->andReturn(null);
+        $this->expectException(\TypeError::class);
         $mock->nonNullableSelf();
     }
 
@@ -145,13 +142,13 @@ class MockingNullableMethodsTest extends MockeryTestCase
 
     /**
      * @test
-     * @expectedException \TypeError
      */
     public function itShouldNotAllowClassToBeNull()
     {
         $mock = mock("test\Mockery\Fixtures\MethodWithNullableReturnType");
 
         $mock->shouldReceive('nonNullableClass')->andReturn(null);
+        $this->expectException(\TypeError::class);
         $mock->nonNullableClass();
     }
 
@@ -184,7 +181,7 @@ class MockingNullableMethodsTest extends MockeryTestCase
 
         $double->shouldReceive("nullableClass")->andReturnNull();
 
-        $this->assertEquals(null, $double->nullableClass());
+        $this->assertNull($double->nullableClass());
     }
 
     /** @test */
@@ -194,7 +191,7 @@ class MockingNullableMethodsTest extends MockeryTestCase
 
         $double->shouldReceive("nullableString")->andReturnNull();
 
-        $this->assertEquals(null, $double->nullableString());
+        $this->assertNull($double->nullableString());
     }
 
     /** @test */
@@ -204,7 +201,7 @@ class MockingNullableMethodsTest extends MockeryTestCase
 
         $double->shouldReceive("nullableInt")->andReturnNull();
 
-        $this->assertEquals(null, $double->nullableInt());
+        $this->assertNull($double->nullableInt());
     }
 
     /** @test */
@@ -212,6 +209,6 @@ class MockingNullableMethodsTest extends MockeryTestCase
     {
         $double = \Mockery::spy(MethodWithNullableReturnType::class);
 
-        $this->assertEquals(null, $double->nullableClass());
+        $this->assertNull($double->nullableClass());
     }
 }

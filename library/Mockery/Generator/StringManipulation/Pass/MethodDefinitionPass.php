@@ -89,6 +89,7 @@ class MethodDefinitionPass implements Pass
     protected function renderReturnType(Method $method)
     {
         $type = $method->getReturnType();
+
         return $type ? sprintf(': %s', $type) : '';
     }
 
@@ -101,30 +102,9 @@ class MethodDefinitionPass implements Pass
 
     protected function renderTypeHint(Parameter $param)
     {
-        $languageTypeHints = array(
-            'self',
-            'array',
-            'callable',
-            // Up to php 7
-            'bool',
-            'float',
-            'int',
-            'string',
-            'iterable',
-        );
-        $typeHint = trim($param->getTypeHintAsString());
+        $typeHint = $param->getTypeHint();
 
-        if (!empty($typeHint)) {
-            if (!in_array($typeHint, $languageTypeHints)) {
-                $typeHint = '\\'.$typeHint;
-            }
-
-            if (version_compare(PHP_VERSION, '7.1.0-dev') >= 0 && $param->allowsNull()) {
-                $typeHint = "?".$typeHint;
-            }
-        }
-
-        return $typeHint .= ' ';
+        return $typeHint === null ? '' : sprintf('%s ', $typeHint);
     }
 
     private function renderMethodBody($method, $config)

@@ -28,13 +28,18 @@ use Mockery;
  */
 trait MockeryPHPUnitIntegration
 {
+    use MockeryPHPUnitIntegrationAssertPostConditions;
+
+    protected $mockeryOpen;
+
     /**
      * Performs assertions shared by all tests of a test case. This method is
      * called before execution of a test ends and before the tearDown method.
      */
-    protected function assertPostConditions()
+    protected function mockeryAssertPostConditions()
     {
         $this->addMockeryExpectationsToAssertionCount();
+        $this->checkMockeryExceptions();
         $this->closeMockery();
 
         parent::assertPostConditions();
@@ -42,10 +47,19 @@ trait MockeryPHPUnitIntegration
 
     protected function addMockeryExpectationsToAssertionCount()
     {
-        $container = Mockery::getContainer();
-        if ($container != null) {
-            $count = $container->mockery_getExpectationCount();
-            $this->addToAssertionCount($count);
+        $this->addToAssertionCount(Mockery::getContainer()->mockery_getExpectationCount());
+    }
+
+    protected function checkMockeryExceptions()
+    {
+        if (!method_exists($this, "markAsRisky")) {
+            return;
+        }
+
+        foreach (Mockery::getContainer()->mockery_thrownExceptions() as $e) {
+            if (!$e->dismissed()) {
+                $this->markAsRisky();
+            }
         }
     }
 

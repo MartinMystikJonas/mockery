@@ -23,17 +23,14 @@ namespace test\Mockery;
 
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-/**
- * @requires PHP 7.1.0RC3
- */
 class MockingMethodsWithIterableTypeHintsTest extends MockeryTestCase
 {
     /** @test */
     public function itShouldSuccessfullyBuildTheMock()
     {
-        require __DIR__."/Fixtures/MethodWithIterableTypeHints.php";
+        require __DIR__ . "/Fixtures/MethodWithIterableTypeHints.php";
         $mock = mock("test\Mockery\Fixtures\MethodWithIterableTypeHints");
 
-        $this->assertTrue($mock instanceof \test\Mockery\Fixtures\MethodWithIterableTypeHints);
+        $this->assertInstanceOf(\test\Mockery\Fixtures\MethodWithIterableTypeHints::class, $mock);
     }
 }

@@ -41,11 +41,31 @@ class Configuration
     protected $_allowMockingMethodsUnnecessarily = true;
 
     /**
+     * @var QuickDefinitionsConfiguration
+     */
+    protected $_quickDefinitionsConfiguration;
+
+    /**
      * Parameter map for use with PHP internal classes.
      *
      * @var array
      */
     protected $_internalClassParamMap = array();
+
+    protected $_constantsMap = array();
+
+    /**
+     * Boolean assertion is reflection caching enabled or not. It should be
+     * always enabled, except when using PHPUnit's --static-backup option.
+     *
+     * @see https://github.com/mockery/mockery/issues/268
+     */
+    protected $_reflectionCacheEnabled = true;
+
+    public function __construct()
+    {
+        $this->_quickDefinitionsConfiguration = new QuickDefinitionsConfiguration();
+    }
 
     /**
      * Custom object formatters
@@ -57,7 +77,7 @@ class Configuration
     /**
      * Set boolean to allow/prevent mocking of non-existent methods
      *
-     * @param bool
+     * @param bool $flag
      */
     public function allowMockingNonExistentMethods($flag = true)
     {
@@ -77,10 +97,14 @@ class Configuration
     /**
      * Set boolean to allow/prevent unnecessary mocking of methods
      *
-     * @param bool
+     * @param bool $flag
+     *
+     * @deprecated since 1.4.0
      */
     public function allowMockingMethodsUnnecessarily($flag = true)
     {
+        @trigger_error(sprintf("The %s method is deprecated and will be removed in a future version of Mockery", __METHOD__), E_USER_DEPRECATED);
+
         $this->_allowMockingMethodsUnnecessarily = (bool) $flag;
     }
 
@@ -88,9 +112,13 @@ class Configuration
      * Return flag indicating whether mocking non-existent methods allowed
      *
      * @return bool
+     *
+     * @deprecated since 1.4.0
      */
     public function mockingMethodsUnnecessarilyAllowed()
     {
+        @trigger_error(sprintf("The %s method is deprecated and will be removed in a future version of Mockery", __METHOD__), E_USER_DEPRECATED);
+
         return $this->_allowMockingMethodsUnnecessarily;
     }
 
@@ -104,6 +132,10 @@ class Configuration
      */
     public function setInternalClassMethodParamMap($class, $method, array $map)
     {
+        if (\PHP_MAJOR_VERSION > 7) {
+            throw new \LogicException('Internal class parameter overriding is not available in PHP 8. Incompatible signatures have been reclassified as fatal errors.');
+        }
+
         if (!isset($this->_internalClassParamMap[strtolower($class)])) {
             $this->_internalClassParamMap[strtolower($class)] = array();
         }
@@ -111,7 +143,7 @@ class Configuration
     }
 
     /**
-     * Remove all overriden parameter maps from internal PHP classes.
+     * Remove all overridden parameter maps from internal PHP classes.
      */
     public function resetInternalClassMethodParamMaps()
     {
@@ -121,7 +153,7 @@ class Configuration
     /**
      * Get the parameter map of an internal PHP class method
      *
-     * @return array
+     * @return array|null
      */
     public function getInternalClassMethodParamMap($class, $method)
     {
@@ -135,26 +167,76 @@ class Configuration
         return $this->_internalClassParamMap;
     }
 
+    public function setConstantsMap(array $map)
+    {
+        $this->_constantsMap = $map;
+    }
+
+    public function getConstantsMap()
+    {
+        return $this->_constantsMap;
+    }
+
+    /**
+     * Returns the quick definitions configuration
+     */
+    public function getQuickDefinitions(): QuickDefinitionsConfiguration
+    {
+        return $this->_quickDefinitionsConfiguration;
+    }
+
+    /**
+     * Disable reflection caching
+     *
+     * It should be always enabled, except when using
+     * PHPUnit's --static-backup option.
+     *
+     * @see https://github.com/mockery/mockery/issues/268
+     */
+    public function disableReflectionCache()
+    {
+        $this->_reflectionCacheEnabled = false;
+    }
+
+    /**
+     * Enable reflection caching
+     *
+     * It should be always enabled, except when using
+     * PHPUnit's --static-backup option.
+     *
+     * @see https://github.com/mockery/mockery/issues/268
+     */
+    public function enableReflectionCache()
+    {
+        $this->_reflectionCacheEnabled = true;
+    }
+
+    /**
+     * Is reflection cache enabled?
+     */
+    public function reflectionCacheEnabled()
+    {
+        return $this->_reflectionCacheEnabled;
+    }
+
     public function setObjectFormatter($class, $formatterCallback)
     {
         $this->_objectFormatters[$class] = $formatterCallback;
     }
 
-    public function findObjectFormatter($class)
+    public function getObjectFormatter($class, $defaultFormatter)
     {
         $parentClass = $class;
-        for ($classes[] = $parentClass; $parentClass = get_parent_class($parentClass); $classes[] = $parentClass);
+        do {
+            $classes[] = $parentClass;
+            $parentClass = get_parent_class($parentClass);
+        } while ($parentClass);
         $classesAndInterfaces = array_merge($classes, class_implements($class));
         foreach ($classesAndInterfaces as $type) {
             if (isset($this->_objectFormatters[$type])) {
-                return $type;
+                return $this->_objectFormatters[$type];
             }
         }
-        return null;
-    }
-
-    public function getObjectFormatter($class)
-    {
-        return $this->_objectFormatters[$class];
+        return $defaultFormatter;
     }
 }

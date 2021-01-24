@@ -42,6 +42,7 @@ class ClassWithExpectsMethod
     }
 }
 
+
 class AllowsExpectsSyntaxTest extends TestCase
 {
     /** @test */
@@ -67,6 +68,14 @@ class AllowsExpectsSyntaxTest extends TestCase
     }
 
     /** @test */
+    public function allowsCanTakeAString()
+    {
+        $stub = m::mock();
+        $stub->allows("foo")->andReturns("bar");
+        $this->assertEquals("bar", $stub->foo());
+    }
+
+    /** @test */
     public function expects_can_optionally_match_on_any_arguments()
     {
         $mock = m::mock();
@@ -76,13 +85,12 @@ class AllowsExpectsSyntaxTest extends TestCase
     }
 
     /** @test */
-    public function generateSkipsAllowsMethodIfAlreadyExists()
+    public function expects_can_take_a_string()
     {
-        $stub = m::mock("test\Mockery\ClassWithAllowsMethod");
+        $mock = m::mock();
+        $mock->expects("foo")->andReturns(123);
 
-        $stub->shouldReceive('allows')->andReturn(123);
-
-        $this->assertEquals(123, $stub->allows());
+        $this->assertEquals(123, $mock->foo(456, 789));
     }
 
     /** @test */
@@ -116,6 +124,16 @@ class AllowsExpectsSyntaxTest extends TestCase
         $mock->foo(123);
 
         m::close();
+    }
+
+    /** @test */
+    public function generateSkipsAllowsMethodIfAlreadyExists()
+    {
+        $stub = m::mock("test\Mockery\ClassWithAllowsMethod");
+
+        $stub->shouldReceive('allows')->andReturn(123);
+
+        $this->assertEquals(123, $stub->allows());
     }
 
     /** @test */

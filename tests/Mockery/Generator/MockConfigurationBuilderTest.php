@@ -19,7 +19,7 @@
  * @license    http://github.com/padraic/mockery/blob/master/LICENSE New BSD License
  */
 
-namespace Mockery\Generator;
+namespace tests\Mockery\Generator;
 
 use Mockery as m;
 use Mockery\Generator\MockConfigurationBuilder;
@@ -32,7 +32,7 @@ class MockConfigurationBuilderTest extends TestCase
      */
     public function reservedWordsAreBlackListedByDefault()
     {
-        $builder = new MockConfigurationBuilder;
+        $builder = new MockConfigurationBuilder();
         $this->assertContains('__halt_compiler', $builder->getMockConfiguration()->getBlackListedMethods());
 
         // need a builtin for this
@@ -44,10 +44,20 @@ class MockConfigurationBuilderTest extends TestCase
      */
     public function magicMethodsAreBlackListedByDefault()
     {
-        $builder = new MockConfigurationBuilder;
-        $builder->addTarget("Mockery\Generator\ClassWithMagicCall");
+        $builder = new MockConfigurationBuilder();
+        $builder->addTarget(ClassWithMagicCall::class);
         $methods = $builder->getMockConfiguration()->getMethodsToMock();
-        $this->assertEquals(1, count($methods));
+        $this->assertCount(1, $methods);
+        $this->assertEquals("foo", $methods[0]->getName());
+    }
+
+    /** @test */
+    public function xdebugs_debug_info_is_black_listed_by_default()
+    {
+        $builder = new MockConfigurationBuilder();
+        $builder->addTarget(ClassWithDebugInfo::class);
+        $methods = $builder->getMockConfiguration()->getMethodsToMock();
+        $this->assertCount(1, $methods);
         $this->assertEquals("foo", $methods[0]->getName());
     }
 }
@@ -57,7 +67,19 @@ class ClassWithMagicCall
     public function foo()
     {
     }
+
     public function __call($method, $args)
+    {
+    }
+}
+
+class ClassWithDebugInfo
+{
+    public function foo()
+    {
+    }
+
+    public function __debugInfo()
     {
     }
 }

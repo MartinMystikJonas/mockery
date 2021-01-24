@@ -39,6 +39,8 @@ class AvoidMethodClashPass implements Pass
                     "",
                     $code
                 );
+
+                $code = str_replace(" implements MockInterface", " implements LegacyMockInterface", $code);
             }
         }
 

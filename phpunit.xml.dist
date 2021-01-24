@@ -1,33 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
-         bootstrap="./tests/Bootstrap.php"
+<phpunit bootstrap="./tests/Bootstrap.php"
          colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnError="false"
-         stopOnFailure="false"
-         syntaxCheck="true"
-         verbose="true">
+         verbose="true"
 >
     <testsuites>
-        <testsuite name="Mockery Test Suite">
+        <testsuite name="Mockery Test Suite PHP8">
             <directory suffix="Test.php">./tests</directory>
-            <exclude>./tests/Mockery/MockingVariadicArgumentsTest.php</exclude>
-            <exclude>./tests/Mockery/MockingParameterAndReturnTypesTest.php</exclude>
-            <exclude>./tests/Mockery/Generator/StringManipulation/Pass/MagicMethodTypeHintsPassTest.php</exclude>
-            <file phpVersion="7.0.0-dev" phpVersionOperator=">=">./tests/Mockery/MockingParameterAndReturnTypesTest.php</file>
-            <file phpVersion="7.0.0-dev" phpVersionOperator=">=">./tests/Mockery/Generator/StringManipulation/Pass/MagicMethodTypeHintsPassTest.php</file>
+            <directory phpVersion="8.0.0" phpVersionOperator=">=">./tests/PHP80</directory>
+        </testsuite>
+
+        <testsuite name="Mockery Test Suite PHP7">
+            <directory suffix="Test.php">./tests</directory>
+            <exclude>./tests/PHP80</exclude>
         </testsuite>
     </testsuites>
+
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./library/</directory>
             <exclude>
+                <directory>./library/Mockery/Adapter/Phpunit/Legacy</directory>
                 <file>./library/Mockery/Adapter/Phpunit/TestListener.php</file>
+                <file>./library/Mockery/Adapter/Phpunit/MockeryPHPUnitIntegrationAssertPostConditions.php</file>
+                <file>./library/Mockery/Adapter/Phpunit/MockeryTestCaseSetUp.php</file>
             </exclude>
         </whitelist>
     </filter>
+
 </phpunit>

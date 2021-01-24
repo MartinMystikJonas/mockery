@@ -23,14 +23,11 @@ namespace test\Mockery;
 
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-/**
- * @requires PHP 7.1.0RC3
- */
 class MockingVoidMethodsTest extends MockeryTestCase
 {
-    protected function setUp()
+    protected function mockeryTestSetUp()
     {
-        require_once __DIR__."/Fixtures/MethodWithVoidReturnType.php";
+        require_once __DIR__ . "/Fixtures/MethodWithVoidReturnType.php";
     }
 
 
@@ -39,7 +36,7 @@ class MockingVoidMethodsTest extends MockeryTestCase
     {
         $mock = mock("test\Mockery\Fixtures\MethodWithVoidReturnType");
 
-        $this->assertTrue($mock instanceof \test\Mockery\Fixtures\MethodWithVoidReturnType);
+        $this->assertInstanceOf(\test\Mockery\Fixtures\MethodWithVoidReturnType::class, $mock);
     }
 
     /** @test */

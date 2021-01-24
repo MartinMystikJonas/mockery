@@ -19,31 +19,23 @@
  * @license    http://github.com/padraic/mockery/blob/master/LICENSE New BSD License
  */
 
-use PHPUnit\Framework\TestCase;
+namespace tests\Mockery\Adapter\Phpunit;
 
+use Mockery\Adapter\Phpunit\MockeryTestCase;
+use PHPUnit\Framework\TestResult;
+use Mockery\Adapter\Phpunit\TestListener;
+use test\Mockery\Fixtures\EmptyTestCase;
 
-class Mockery_Adapter_Phpunit_TestListenerTest extends TestCase
+class TestListenerTest extends MockeryTestCase
 {
-    protected function setUp()
+    protected function mockeryTestSetUp()
     {
-        /**
-         * Skip all tests here if PHPUnit is less than 6.0.0
-         */
-        if (class_exists('\PHPUnit\Runner\Version')) {
-            $ver = \PHPUnit\Runner\Version::series();
-        } else {
-            $ver = \PHPUnit_Runner_Version::series();
-        }
-        if (intval($ver) > 5) {
-            $this->markTestSkipped('The TestListener is not supported with PHPUnit 6+.');
-            return;
-        }
         // We intentionally test the static container here. That is what the
         // listener will check.
         $this->container = \Mockery::getContainer();
-        $this->listener = new \Mockery\Adapter\Phpunit\TestListener();
-        $this->testResult = new \PHPUnit_Framework_TestResult();
-        $this->test = new \Mockery_Adapter_Phpunit_EmptyTestCase();
+        $this->listener = new TestListener();
+        $this->testResult = new TestResult();
+        $this->test = new EmptyTestCase();
 
         $this->test->setTestResultObject($this->testResult);
         $this->testResult->addListener($this->listener);
@@ -79,12 +71,29 @@ class Mockery_Adapter_Phpunit_TestListenerTest extends TestCase
         $mock->bar();
         \Mockery::close();
     }
-}
 
-class Mockery_Adapter_Phpunit_EmptyTestCase extends TestCase
-{
-    public function getStatus()
+    public function testMockeryIsAddedToBlacklist()
     {
-        return \PHPUnit_Runner_BaseTestRunner::STATUS_PASSED;
+        $suite = \Mockery::mock(\PHPUnit\Framework\TestSuite::class);
+
+        if (method_exists(\PHPUnit\Util\Blacklist::class, 'addDirectory')) {
+            $this->assertFalse(
+                (new \PHPUnit\Util\Blacklist())->isBlacklisted(
+                    (new \ReflectionClass(\Mockery::class))->getFileName()
+                )
+            );
+
+            $this->listener->startTestSuite($suite);
+
+            $this->assertTrue(
+                (new \PHPUnit\Util\Blacklist())->isBlacklisted(
+                    (new \ReflectionClass(\Mockery::class))->getFileName()
+                )
+            );
+        } else {
+            $this->assertArrayNotHasKey(\Mockery::class, \PHPUnit\Util\Blacklist::$blacklistedClassNames);
+            $this->listener->startTestSuite($suite);
+            $this->assertSame(1, \PHPUnit\Util\Blacklist::$blacklistedClassNames[\Mockery::class]);
+        }
     }
 }

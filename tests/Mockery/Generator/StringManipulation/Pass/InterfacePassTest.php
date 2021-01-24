@@ -35,7 +35,7 @@ class InterfacePassTest extends TestCase
      */
     public function shouldNotAlterCodeIfNoTargetInterfaces()
     {
-        $pass = new InterfacePass;
+        $pass = new InterfacePass();
 
         $config = m::mock("Mockery\Generator\MockConfiguration", array(
             "getTargetInterfaces" => array(),
@@ -50,7 +50,7 @@ class InterfacePassTest extends TestCase
      */
     public function shouldAddAnyInterfaceNamesToImplementsDefinition()
     {
-        $pass = new InterfacePass;
+        $pass = new InterfacePass();
 
         $config = m::mock("Mockery\Generator\MockConfiguration", array(
             "getTargetInterfaces" => array(
@@ -61,6 +61,6 @@ class InterfacePassTest extends TestCase
 
         $code = $pass->apply(static::CODE, $config);
 
-        $this->assertContains("implements MockInterface, \Dave\Dave, \Paddy\Paddy", $code);
+        $this->assertTrue(\mb_strpos($code, "implements MockInterface, \Dave\Dave, \Paddy\Paddy") !== false);
     }
 }

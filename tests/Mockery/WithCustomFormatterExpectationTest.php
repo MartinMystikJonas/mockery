@@ -23,12 +23,13 @@ use PHPUnit\Framework\TestCase;
 
 class WithCustomFormatterExpectationTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         \Mockery::getConfiguration()->setObjectFormatter(
             'ClassWithCustomFormatter',
-            function ($object) {
+            function ($object, $nesting) {
                 return array(
+                    "formatter" => 'ClassWithCustomFormatter',
                     "properties" => array(
                         "stringProperty" => $object->stringProperty
                     ),
@@ -40,8 +41,9 @@ class WithCustomFormatterExpectationTest extends TestCase
         );
         \Mockery::getConfiguration()->setObjectFormatter(
             'InterfaceWithCustomFormatter',
-            function ($object) {
+            function ($object, $nesting) {
                 return array(
+                    "formatter" => 'InterfaceWithCustomFormatter',
                     "properties" => array(
                         "stringProperty" => $object->stringProperty
                     ),
@@ -54,17 +56,24 @@ class WithCustomFormatterExpectationTest extends TestCase
     }
 
     /**
-     * @dataProvider findObjectFormatterDataProvider
+     * @dataProvider getObjectFormatterDataProvider
      */
-    public function testFindObjectFormatter($object, $expected)
+    public function testGetObjectFormatter($object, $expected)
     {
+        $defaultFormatter = function ($class, $nesting) {
+            return null;
+        };
+
+        $formatter = \Mockery::getConfiguration()->getObjectFormatter(get_class($object), $defaultFormatter);
+        $formatted = $formatter($object, 1);
+
         $this->assertEquals(
             $expected,
-            \Mockery::getConfiguration()->findObjectFormatter(get_class($object))
+            $formatted ? $formatted['formatter'] : null
         );
     }
 
-    public function findObjectFormatterDataProvider()
+    public function getObjectFormatterDataProvider()
     {
         return array(
             array(
@@ -97,10 +106,10 @@ class WithCustomFormatterExpectationTest extends TestCase
     {
         $string = Mockery::formatObjects(array($obj));
         foreach ($shouldContains as $containString) {
-            $this->assertContains($containString, $string);
+            $this->assertStringContainsString($containString, $string);
         }
         foreach ($shouldNotContains as $containString) {
-            $this->assertNotContains($containString, $string);
+            $this->assertStringNotContainsString($containString, $string);
         }
     }
 
